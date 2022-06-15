@@ -8,16 +8,17 @@ public with sharing class OrderTriggerHandler {
 
     // CONSTANTS
     private static final String DRAFT = 'Draft';
-    private static final String ACTIVE = 'Active';
+    private static final String ACTIVATED = 'Activated';
     private static final String ERRMSG = 'Il faut ajouter des produits à l\'ordre avant de pouvoir le passer en actif.';
 
     public static void beforeUpdate(Map<Id,Order> oldOrders ,Map<Id,Order> newOrders){
-        // First restrict scope, check if the status of the order has changed, if the old one was Draft, and the new one Active
+        // First restrict scope, check if the status of the order has changed, if the old one was Draft, and the new one Activated
+        // NOTE : This is already native...
         List<Order> ordersToUpdate = new List<Order>();
         for(Id orderId : newOrders.keySet()){
             Order oldOrder = oldOrders.get(orderId);
             Order newOrder = newOrders.get(orderId);
-            if(oldOrder.status == DRAFT && newOrder.Status == ACTIVE){
+            if(oldOrder.Status == DRAFT && newOrder.Status == ACTIVATED){
                 // Add it to the list
                 ordersToUpdate.add(newOrder);
             }
@@ -34,8 +35,20 @@ public with sharing class OrderTriggerHandler {
 
     }
 
-    public static void beforeDelete(List<Order> orders){
-        
+    public static void afterDelete(List<Order> orders){
+        // Query the Account for each order and check if it has any orders
+        Map<Id,Boolean> hasOrdersPerAccountId = hasOrder(orders);
+        Account[] accsToUpdate = new List<Account>();
+        // Loop through the map and change Active__c depending on the value of the map
+        for(Id accId : hasOrdersPerAccountId.keySet()){
+            Account a = new Account(Id = accId,Active__c = hasOrdersPerAccountId?.get(accId));
+            accsToUpdate.add(a);
+        }
+        try {
+            update accsToUpdate;
+        } catch (Exception e) {
+            System.debug('Error updating accounts : ' + e.getMessage());
+        }
     }
 
     /**
@@ -62,6 +75,26 @@ public with sharing class OrderTriggerHandler {
         }
         return hasProductsMap;
 
+    }
+
+    private static Map<Id,Boolean> hasOrder(Order[] orders){
+        // Query the Accounts
+        // Get the accounts ids
+        List<Id> accountIds = new List<Id>();
+        for(Order order : orders){
+            accountIds.add(order.AccountId);
+        }
+        List<Account> accounts = [SELECT Id , (SELECT Id FROM Orders) FROM Account WHERE Id IN :accountIds];
+        // If any accounts have orders, then active__c must become false.
+        Map<Id,Boolean> hasOrdersMap = new Map<Id,Boolean>();
+        for(Account account : accounts){
+            if(!account.Orders.isEmpty()){
+                hasOrdersMap.put(account.Id, true);
+            } else {
+                hasOrdersMap.put(account.Id, false);
+            }
+        }
+        return hasOrdersMap;
     }
 
 }

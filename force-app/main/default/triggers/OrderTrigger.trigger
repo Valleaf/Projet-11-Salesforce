@@ -5,8 +5,8 @@ trigger OrderTrigger on Order (before update,before delete) {
     if(Trigger.isBefore && Trigger.isUpdate) {
         OrderTriggerHandler.beforeUpdate(Trigger.OldMap,Trigger.NewMap);
     }
-    if(Trigger.isBefore && Trigger.isDelete){
-        OrderTriggerHandler.beforeDelete(Trigger.Old);
+    if(Trigger.isAfter && Trigger.isDelete){
+        OrderTriggerHandler.afterDelete(Trigger.Old);
     }
 
 }
