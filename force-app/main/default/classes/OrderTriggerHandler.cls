@@ -77,6 +77,14 @@ public with sharing class OrderTriggerHandler {
 
     }
 
+    /**
+     * hasOrder 
+     *
+     * @param orders (Order[]): List of Orders deleted. Will check the associated accounts and find out if they have any orders after deletion
+     *
+     * @return Map<Id, Boolean>: A Map associating a account with a boolean, stating if that accoun thas Orders.
+     *
+     */
     private static Map<Id,Boolean> hasOrder(Order[] orders){
         // Query the Accounts
         // Get the accounts ids
