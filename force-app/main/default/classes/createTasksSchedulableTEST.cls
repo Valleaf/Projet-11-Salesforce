@@ -10,3 +10,7 @@ private class createTasksSchedulableTEST {
          Test.stopTest();
     }
 }
+
+// Command to schedule via anonymous
+// System.schedule('Monthly Job', '0 0 10 ? * 2#1', new createTasksSchedulable());
+
