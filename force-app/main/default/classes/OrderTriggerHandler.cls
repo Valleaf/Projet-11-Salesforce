@@ -13,7 +13,6 @@ public with sharing class OrderTriggerHandler {
 
     public static void beforeUpdate(Map<Id,Order> oldOrders ,Map<Id,Order> newOrders){
         // First restrict scope, check if the status of the order has changed, if the old one was Draft, and the new one Activated
-        // NOTE : This is already native...
         List<Order> ordersToUpdate = new List<Order>();
         for(Id orderId : newOrders.keySet()){
             Order oldOrder = oldOrders.get(orderId);
