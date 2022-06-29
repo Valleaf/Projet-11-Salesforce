@@ -9,7 +9,7 @@ public with sharing class OrderTriggerHandler {
     // CONSTANTS
     private static final String DRAFT = 'Draft';
     private static final String ACTIVATED = 'Activated';
-    private static final String ERRMSG = 'Il faut ajouter des produits à l\'ordre avant de pouvoir le passer en actif.';
+    private static final String ERRMSG = Label.VR_OrderWithoutProductsActivated;
 
     public static void beforeUpdate(Map<Id,Order> oldOrders ,Map<Id,Order> newOrders){
         // First restrict scope, check if the status of the order has changed, if the old one was Draft, and the new one Activated
