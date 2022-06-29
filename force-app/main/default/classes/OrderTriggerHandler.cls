@@ -37,7 +37,12 @@ public with sharing class OrderTriggerHandler {
 
     public static void afterDelete(List<Order> orders){
         // Query the Account for each order and check if it has any orders
-        Map<Id,Boolean> hasOrdersPerAccountId = hasOrder(orders);
+        // Get the accounts
+        List<Account> accounts = new List<Account>();
+        for(Order o : orders){
+            accounts.add(o.Account);
+        }
+        Map<Id,Boolean> hasOrdersPerAccountId = AccountUtils.hasOrder(accounts);
         Account[] accsToUpdate = new List<Account>();
         // Loop through the map and change Active__c depending on the value of the map
         for(Id accId : hasOrdersPerAccountId.keySet()){
@@ -77,32 +82,5 @@ public with sharing class OrderTriggerHandler {
 
     }
 
-    /**
-     * hasOrder 
-     *
-     * @param orders (Order[]): List of Orders deleted. Will check the associated accounts and find out if they have any orders after deletion
-     *
-     * @return Map<Id, Boolean>: A Map associating a account with a boolean, stating if that accoun thas Orders.
-     *
-     */
-    private static Map<Id,Boolean> hasOrder(Order[] orders){
-        // Query the Accounts
-        // Get the accounts ids
-        List<Id> accountIds = new List<Id>();
-        for(Order order : orders){
-            accountIds.add(order.AccountId);
-        }
-        List<Account> accounts = [SELECT Id , (SELECT Id FROM Orders) FROM Account WHERE Id IN :accountIds];
-        // If any accounts have orders, then active__c must become false.
-        Map<Id,Boolean> hasOrdersMap = new Map<Id,Boolean>();
-        for(Account account : accounts){
-            if(!account.Orders.isEmpty()){
-                hasOrdersMap.put(account.Id, true);
-            } else {
-                hasOrdersMap.put(account.Id, false);
-            }
-        }
-        return hasOrdersMap;
-    }
 
 }
