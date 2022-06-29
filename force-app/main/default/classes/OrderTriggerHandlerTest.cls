@@ -7,7 +7,6 @@
 @isTest
 public with sharing class OrderTriggerHandlerTest{
     private static final String ACTIVATED = 'Activated';
-    
     @TestSetup
     static void makeData(){
         Account acc1 = DataFactory.createAccount('Test Account 1', true);
@@ -15,7 +14,7 @@ public with sharing class OrderTriggerHandlerTest{
         PricebookEntry pbe = DataFactory.initPriceBook('Chemise Verte longue XXL', 'TTII', 100);
         insert pbe;
     }
-    
+
     @isTest
     static void updateOrderStatusTEST(){
         User u = DataFactory.createStandardUser();
@@ -51,12 +50,41 @@ public with sharing class OrderTriggerHandlerTest{
             update o1;
             // Query o1 and check its status
             Test.stopTest();
-            Order orderAfter = [SELECT Status FROM Order WHERE Id = :o1.Id];
-            System.assertEquals(ACTIVATED, orderAfter.Status,'Status should be activated');
+            Order orderAfter = [SELECT Status
+                                FROM Order
+                                WHERE Id = :o1.Id];
+            System.assertEquals(ACTIVATED, orderAfter.Status, 'Status should be activated');
         }
     }
+    @isTest
+    static void deleteOrderAndCheckOrderActive(){
+        User u = DataFactory.createStandardUser();
+        insert u;
+
+        System.runAs(u){
+            Account acc1 = [SELECT Id, Name
+                            FROM Account
+                            WHERE Name = 'Test Account 1'];
+            Product2 pd1 = [SELECT Id
+                            FROM Product2
+                            WHERE Name = 'Chemise Verte longue XXL'];
+            PricebookEntry pbe = [SELECT Id, Pricebook2Id
+                                  FROM PricebookEntry
+                                  WHERE Product2Id = :pd1.Id
+                                  LIMIT 1];
+
+            Order o1 = DataFactory.createOrder(acc1, pbe.Pricebook2Id, false);
+            Order o2 = DataFactory.createOrder(acc1, pbe.Pricebook2Id, false);
+            insert new List<Order>{o1,o2};
+            Test.startTest();
+            delete new List<Order>{o1,o2};
+            Test.stopTest();
+            // Query and assert
+            Account a = [SELECT Active__c FROM Account WHERE ID = :acc1.Id];
+            System.assertEquals(false, a.Active__c, 'Active__c should be false');
 
 
-
+        }
+    }
 
 }

@@ -56,4 +56,12 @@ public with sharing class DataFactory {
         }
         return orderItem;
     }
+
+    public static Task createTask(Account a, User u,boolean insertFlag){
+        Task t = new Task(OwnerId = u.Id,Subject = 'Call',Status = 'New', Priority = 'Normal', WhatId = a.Id, TaskSubtype = 'Call');
+        if(insertFlag) {
+            insert t;
+        }
+        return t;
+    }
 }

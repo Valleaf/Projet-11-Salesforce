@@ -14,13 +14,9 @@ public class AccountUtils {
      * @return Map<Id, Boolean>: A Map associating a account with a boolean, stating if that accoun thas Orders.
      *
      */
-    public static Map<Id,Boolean> hasOrder(Account[] accs){
+    public static Map<Id,Boolean> hasOrder(Id[] accsIds){
         // Query the Accounts
-        // Get the accounts ids
-        List<Id> accsIds = new List<Id>();
-        for(Account a : accs){
-            accsIds.add(a.Id);
-        }
+
         List<Account> accounts = [SELECT Id , (SELECT Id FROM Orders) FROM Account WHERE Id IN :accsIds];
         // If any accounts have orders, then active__c must become false.
         Map<Id,Boolean> hasOrdersMap = new Map<Id,Boolean>();
@@ -59,8 +55,8 @@ public class AccountUtils {
         Map<Id,Boolean> accsMapToReturn = new Map<Id,Boolean>();
         // Loop on accs
         for(Account a : accs){
-            // Add it to the map, if it is contained, set the bool to false. 
-            accsMapToReturn.put(a.Id, !accountsWithTask.contains(a.Id));
+            // Add it to the map, if it is contained, set it to true 
+            accsMapToReturn.put(a.Id, accountsWithTask.contains(a.Id));
         }
         return accsMapToReturn;      
     }
@@ -81,11 +77,12 @@ public class AccountUtils {
         Map<Id,Boolean> hasTasksPerAccountId = hasTasks(accs);
         // Loop on the accounts and create the tasks
         for(Account a : accs){
-            if(hasTasksPerAccountId.get(a.Id) == null){
+            if(!hasTasksPerAccountId.get(a.Id)){
                 // No tasks. Create one
                 tasksToInsert.add(new Task(Subject = 'Call',Status = 'New', Priority = 'Normal', WhatId = a.Id, OwnerId = a.OwnerId, isReminderSet = true, ReminderDateTime = DateTime.Now().AddDays(5)));
             }
         }
+        insert tasksToInsert;
 
     }
 

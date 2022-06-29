@@ -11,7 +11,7 @@ global class createTasksOnAccountsBatch implements Database.Batchable<sObject>{
     global Database.QueryLocator start(Database.BatchableContext info){
 
         // Get Accounts Without orders and without calls. Entity 'Task' is not supported for semi join inner selects so it will be filtered via apex further on
-        return Database.getQueryLocator('SELECT Id,OwnerId FROM Account WHERE Id NOT IN (SELECT AccountId FROM Orders)');
+        return Database.getQueryLocator('SELECT Id,OwnerId FROM Account WHERE Id NOT IN (SELECT AccountId FROM Order)');
     }
 
     global void execute(Database.BatchableContext info, List<Account> scope){
