@@ -82,7 +82,11 @@ public class AccountUtils {
                 tasksToInsert.add(new Task(Subject = 'Call',Status = 'New', Priority = 'Normal', WhatId = a.Id, OwnerId = a.OwnerId, isReminderSet = true, ReminderDateTime = DateTime.Now().AddDays(5)));
             }
         }
-        insert tasksToInsert;
+        try {
+            insert tasksToInsert;
+        } catch (Exception e) {
+            System.debug('Error inserting tasks : ' + e.getMessage());
+        }
 
     }
 
