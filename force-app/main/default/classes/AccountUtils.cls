@@ -4,26 +4,28 @@
  * @author trouillet.valentin@resilient-koala-seczrx.com
  * @version Version number
  */
-public class AccountUtils {
-
-        /**
-     * hasOrder 
+public class AccountUtils{
+    /**
+     * hasOrder
      *
      * @param orders (Order[]): List of Orders deleted. Will check the associated accounts and find out if they have any orders after deletion
      *
      * @return Map<Id, Boolean>: A Map associating a account with a boolean, stating if that accoun thas Orders.
      *
      */
-    public static Map<Id,Boolean> hasOrder(Id[] accsIds){
+    public static Map<Id, Boolean> hasOrder(Id[] accsIds){
         // Query the Accounts
 
-        List<Account> accounts = [SELECT Id , (SELECT Id FROM Orders) FROM Account WHERE Id IN :accsIds];
+        List<Account> accounts = [SELECT Id, (SELECT Id
+                                              FROM Orders)
+                                  FROM Account 
+                                  WHERE Id IN:accsIds];
         // If any accounts have orders, then active__c must become false.
-        Map<Id,Boolean> hasOrdersMap = new Map<Id,Boolean>();
-        for(Account account : accounts){
-            if(!account.Orders.isEmpty()){
+        Map<Id, Boolean> hasOrdersMap = new Map<Id, Boolean>();
+        for (Account account : accounts){
+            if (!account.Orders.isEmpty()){
                 hasOrdersMap.put(account.Id, true);
-            } else {
+            } else{
                 hasOrdersMap.put(account.Id, false);
             }
         }
@@ -39,26 +41,24 @@ public class AccountUtils {
      *
      * @throws Class name here Write the class description
      */
-    public static Map<Id,Boolean> hasTasks(Account[] accs){
+    public static Map<Id, Boolean> hasTasks(Account[] accs){
         // Create a list of account ids
         List<Id> accsIds = new List<Id>();
-        for(Account a : accs){
+        for (Account a : accs){
             accsIds.add(a.Id);
         }
-        Set<Id> accountsWithTask = new Map<Id, AggregateResult>([
-            SELECT WhatId Id FROM Task
-            WHERE WhatId IN :accsIds
-            AND TaskSubtype = 'Call'
-            GROUP BY WhatId
-            ]).keySet();
+        Set<Id> accountsWithTask = new Map<Id, AggregateResult>([SELECT WhatId Id
+                                                                 FROM Task
+                                                                 WHERE WhatId IN:accsIds AND TaskSubtype = 'Call'
+                                                                 GROUP BY WhatId]).keySet();
         // Now return a map certifying which accounts have a task with the type Call
-        Map<Id,Boolean> accsMapToReturn = new Map<Id,Boolean>();
+        Map<Id, Boolean> accsMapToReturn = new Map<Id, Boolean>();
         // Loop on accs
-        for(Account a : accs){
-            // Add it to the map, if it is contained, set it to true 
+        for (Account a : accs){
+            // Add it to the map, if it is contained, set it to true
             accsMapToReturn.put(a.Id, accountsWithTask.contains(a.Id));
         }
-        return accsMapToReturn;      
+        return accsMapToReturn;
     }
 
     /**
@@ -74,20 +74,19 @@ public class AccountUtils {
     public static void createTasks(Account[] accs){
         List<Task> tasksToInsert = new List<Task>();
         // First check if the accounts have tasks
-        Map<Id,Boolean> hasTasksPerAccountId = hasTasks(accs);
+        Map<Id, Boolean> hasTasksPerAccountId = hasTasks(accs);
         // Loop on the accounts and create the tasks
-        for(Account a : accs){
-            if(!hasTasksPerAccountId.get(a.Id)){
+        for (Account a : accs){
+            if (!hasTasksPerAccountId.get(a.Id)){
                 // No tasks. Create one
-                tasksToInsert.add(new Task(Subject = 'Call',Status = 'New', Priority = 'Normal', WhatId = a.Id, OwnerId = a.OwnerId, isReminderSet = true, ReminderDateTime = DateTime.Now().AddDays(5)));
+                tasksToInsert.add(new Task(Subject = 'Call', Status = 'New', Priority = 'Normal', WhatId = a.Id, OwnerId = a.OwnerId, isReminderSet = true, ReminderDateTime = DateTime.Now().AddDays(5)));
             }
         }
-        try {
+        try{
             insert tasksToInsert;
-        } catch (Exception e) {
+        } catch (Exception e){
             System.debug('Error inserting tasks : ' + e.getMessage());
         }
-
     }
 
 }

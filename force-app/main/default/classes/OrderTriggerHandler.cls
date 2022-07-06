@@ -8,7 +8,7 @@ public with sharing class OrderTriggerHandler{
     // CONSTANTS
     private static final String DRAFT = 'Draft';
     private static final String ACTIVATED = 'Activated';
-    private static final String ERRMSG = Label.VR_OrderWithoutProductsActivated;
+    private static final String ERRMSG = Label.VR_OrderWithoutProductsActivated; // Error message used when updating orders without products
     public static void beforeUpdate(Map<Id, Order> oldOrders, Map<Id, Order> newOrders){
         // First restrict scope, check if the status of the order has changed, if the old one was Draft, and the new one Activated
         List<Order> ordersToUpdate = new List<Order>();
